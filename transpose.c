@@ -2,12 +2,41 @@
 
 #include "util.h"//implementing
 
-typedef struct { //example structure
-    int example;
-    int e_g;
-} Example_Structure;
+/**
+ * Tranpose a given matrix
+ * 
+ * @param mat Matrix to be transposed
+*/
+void transpose_mat(Mat *mat) {
+    int n = mat->n;
+    double temp = -1.0;
+    for (int i = 0; i < n ; i++) {
+        for (int j = i + 1; j < n ; j++) {
+            temp = mat->ptr[i * n + j];
+            mat->ptr[i * n + j] = mat->ptr[j * n + i];
+            mat->ptr[j * n + i] = temp;
 
-static void example_helper_function(int n){
+        }
+    }
+}
+
+/**
+ * Use a single thread to transpose a matrix
+ * 
+ * @param mat Matrix to be tranposed
+*/
+void mat_sq_trans_st(Mat *mat){
+    transpose_mat(mat);
+    return;
+}
+
+void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads){
+    //Put your code here.
+    //example_helper_function(2000);
+    return;
+}
+
+/*static void example_helper_function(int n){
     // Functions defined with the modifier 'static' are only visible
     // to other functions in this file. They cannot be called from
     // outside (for example, from main.c). Use them to organize your
@@ -27,16 +56,4 @@ static void example_helper_function(int n){
     es1.e_g = 7;
     printf("n = %d\n", es1.example + es1.e_g + n);
     return;
-}
-
-void mat_sq_trans_st(Mat *mat){
-    //Put your code here.
-    // example_helper_function(1000);
-    return;
-}
-
-void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads){
-    //Put your code here.
-    //example_helper_function(2000);
-    return;
-}
+}*/
