@@ -48,26 +48,26 @@ int main(int argc, char **argv){
     //print original matrix
     if(verb){
         printf("Original:\n");
-        //mat_print(&mats[0]);
+        mat_print(&mats[0]);
     }
 
     //run and measure time taken
     double ta, tb, tc, td;
     ta = stopwatch();
-    //mat_sq_trans_st(&mats[0]);
+    mat_sq_trans_st(&mats[0]);
     tb = stopwatch();
-    //mat_sq_trans_mt(&mats[1], 1, t);
+    mat_sq_trans_mt(&mats[1], 1, t);
     tc = stopwatch();
     mat_sq_trans_mt(&mats[2], c, t);
     td = stopwatch();
 
     //print resulting matrices
     if(verb){
-        //printf("\nTransposed, single thread:\n");
-        //mat_print(&mats[0]);
+        printf("\nTransposed, single thread:\n");
+        mat_print(&mats[0]);
         printf("\nTransposed, multi thread fine-grain:\n");
-        //mat_print(&mats[1]);
-        //printf("\nTransposed, multi thread coarse-grain:\n");
+        mat_print(&mats[1]);
+        printf("\nTransposed, multi thread coarse-grain:\n");
         mat_print(&mats[2]);
     }
 

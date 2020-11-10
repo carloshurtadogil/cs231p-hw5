@@ -19,21 +19,15 @@ unsigned int batch_size = 0, current_row = 0;
  * @param end End index
 */
 void transpose_mat(Mat *mat, int start, int end) {
-    printf("Start: %d, n: %d\n", start, max_row);
     int n = max_row;
     double temp = -1.0;
     for (int i = start; i < end; i++) { // rows
-        //printf("reached row: %d\n", (i+ 1));
         for (int j = i + 1; j < n ; j++) { // cols
-            printf("%d ", j);
             temp = mat->ptr[i * n + j];
             mat->ptr[i * n + j] = mat->ptr[j * n + i];
             mat->ptr[j * n + i] = temp;
-
         }
-        printf("\n");
     }
-    //printf("Reached end\n");
 }
 
 /**
@@ -48,7 +42,6 @@ size_t get_calc_set(unsigned int rows[], size_t size) {
     pthread_mutex_lock(&lock);
 
     if( current_row < max_row ) { // there remain rows unchecked
-    //printf("in if \n");
         start_row = current_row; // Start with current index
         current_row += batch_size;
         pthread_mutex_unlock(&lock);
@@ -56,9 +49,7 @@ size_t get_calc_set(unsigned int rows[], size_t size) {
         for (i = 0; i < size && start_row <= max_row; ++i) {
             rows[i] = start_row++;
         }
-        //printf("start_row: %d\n", start_row);
     } else {
-        //printf("in elese\n");
         pthread_mutex_unlock(&lock);
     }
 
@@ -71,16 +62,12 @@ size_t get_calc_set(unsigned int rows[], size_t size) {
  * @param arg The Matrices struct with matrices A, B, and C to be calculated
 */
 void *consume_and_calculate(void* arg) {
-    //printf("cconsumed:\n");
     Matrices *matrices = (Matrices *) arg;
     Mat *matrix = matrices->X;
-    //mat_print(matrix);
     unsigned int set[batch_size];
     size_t actual_size = 0;
-    int called = 1;
     // while there are rows left to be processed
     while ((actual_size = get_calc_set(set, batch_size)) > 0) {
-        //printf("Called: %d\n", called); called++;
         for (int i = 0; i < actual_size; ++i) {
             unsigned int curr_row = set[i];
             transpose_mat(matrix, curr_row, curr_row + 1);
@@ -100,12 +87,12 @@ void *consume_and_calculate(void* arg) {
  * @param mat Matrix to be tranposed
 */
 void mat_sq_trans_st(Mat *mat){
+    printf("st n: %d\n", mat->n);
     transpose_mat(mat, 0, mat->n);
     return;
 }
 
 void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads){
-    //printf("starting n: %d\n", mat->n);
     max_row = mat->n;
     batch_size = max_row/grain;
     Matrices matrices = { .X = mat };
@@ -123,8 +110,6 @@ void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads){
         pthread_join(thread_arr[i], NULL);
 
     pthread_mutex_destroy(&lock);
-    printf("result: \n");
-    mat_print(mat);
     return;
 }
 
