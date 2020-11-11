@@ -5,7 +5,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include "util.h"
-    
+
 int main(int argc, char **argv){
     //help message
     if(argc != 5){
@@ -43,6 +43,7 @@ int main(int argc, char **argv){
     for(int i=0; i<3; i++){
         mat_init(&mats[i], n, n);
         mat_fill(&mats[i]);
+        //printf("\n%d) Address: %p\n", i, (void*) &mats[i]);
     }
 
     //print original matrix
@@ -54,10 +55,14 @@ int main(int argc, char **argv){
     //run and measure time taken
     double ta, tb, tc, td;
     ta = stopwatch();
+    //printf("\n0) Address: %p\n", (void*) &mats[0]);
     mat_sq_trans_st(&mats[0]);
+
     tb = stopwatch();
+    //printf("\n1) Address: %p\n", (void*) &mats[1]);
     mat_sq_trans_mt(&mats[1], 1, t);
     tc = stopwatch();
+    //printf("\n3) Address: %p\n", (void*) &mats[2]);
     mat_sq_trans_mt(&mats[2], c, t);
     td = stopwatch();
 
@@ -73,6 +78,6 @@ int main(int argc, char **argv){
 
     //print execution time
     printf("%.8f, %.8f, %.8f\n", tb-ta, tc-tb, td-tc);
-    
+
     return 0;
 }

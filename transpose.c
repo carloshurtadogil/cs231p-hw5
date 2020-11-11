@@ -88,12 +88,15 @@ void *consume_and_calculate(void* arg) {
  * @param mat Matrix to be tranposed
 */
 void mat_sq_trans_st(Mat *mat){
+    //printf("\nAddress: %p\n", (void*) &mat);
     max_row = mat->n;
     transpose_mat(mat, 0, max_row);
     return;
 }
 
 void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads){
+    //printf("Address: %p\n\n", (void*) &mat);
+    //mat_print(mat);
     max_row = mat->n;
     batch_size = max_row/grain;
     Matrices matrices = { .X = mat };
@@ -111,6 +114,8 @@ void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads){
         pthread_join(thread_arr[i], NULL);
 
     pthread_mutex_destroy(&lock);
+    //printf("after: \n");
+    //mat_print(mat);
     return;
 }
 
