@@ -19,6 +19,7 @@ unsigned int batch_size = 0, current_row = 0;
  * @param end End index
 */
 void transpose_mat(Mat *mat, int start, int end) {
+    //printf("start: %d, end: %d\n", start, end);
     int n = max_row;
     double temp = -1.0;
     for (int i = start; i < end; i++) { // rows
@@ -87,8 +88,8 @@ void *consume_and_calculate(void* arg) {
  * @param mat Matrix to be tranposed
 */
 void mat_sq_trans_st(Mat *mat){
-    printf("st n: %d\n", mat->n);
-    transpose_mat(mat, 0, mat->n);
+    max_row = mat->n;
+    transpose_mat(mat, 0, max_row);
     return;
 }
 
