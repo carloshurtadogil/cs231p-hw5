@@ -85,7 +85,7 @@ void *consume_and_calculate(void *arg) {
 /**
  * Use a single thread to transpose a matrix
  * 
- * @param mat Matrix to be tranposed
+ * @param mat Matrix to be transposed
 */
 void mat_sq_trans_st(Mat *mat) {
     //printf("\nAddress: %p\n", (void*) &mat);
