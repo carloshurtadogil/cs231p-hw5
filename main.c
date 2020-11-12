@@ -6,10 +6,10 @@
 #include <time.h>
 #include "util.h"
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     //help message
-    if(argc != 5){
-        printf("USAGE: %s n c t verb\n",argv[0]);
+    if (argc != 5) {
+        printf("USAGE: %s n c t verb\n", argv[0]);
         printf("n       : Size of the square matrix\n");
         printf("c       : Coarseness used by the multi-thread transposer\n");
         printf("t       : Number of threads used by the multi-thread transposer.\n");
@@ -24,30 +24,30 @@ int main(int argc, char **argv){
     c = atoi(argv[2]);
     t = atoi(argv[3]);
     verb = atoi(argv[4]);
-    if(n < 2 || 10000 < n){
+    if (n < 2 || 10000 < n) {
         printf("The size of the matrix 'n' (%d) must be >= 2 and <= 10,000.\n", n);
         exit(1);
     }
-    if(c < 1 || (n*n-n)/2 < c){
+    if (c < 1 || (n * n - n) / 2 < c) {
         printf("The coarseness level 'c' (%d) must be >= 1 and <= %d.\n", \
-               c, (n*n-n)/2);
+               c, (n * n - n) / 2);
         exit(1);
     }
-    if(t < 1){
+    if (t < 1) {
         printf("The number of threads 't' (%d) must be >= 1.\n", t);
         exit(1);
     }
 
     //create and fill 3 matrices
     Mat mats[3];
-    for(int i=0; i<3; i++){
+    for (int i = 0; i < 3; i++) {
         mat_init(&mats[i], n, n);
         mat_fill(&mats[i]);
         //printf("\n%d) Address: %p\n", i, (void*) &mats[i]);
     }
 
     //print original matrix
-    if(verb){
+    if (verb) {
         printf("Original:\n");
         mat_print(&mats[0]);
     }
@@ -67,7 +67,7 @@ int main(int argc, char **argv){
     td = stopwatch();
 
     //print resulting matrices
-    if(verb){
+    if (verb) {
         printf("\nTransposed, single thread:\n");
         mat_print(&mats[0]);
         printf("\nTransposed, multi thread fine-grain:\n");
@@ -77,7 +77,7 @@ int main(int argc, char **argv){
     }
 
     //print execution time
-    printf("%.8f, %.8f, %.8f\n", tb-ta, tc-tb, td-tc);
+    printf("%.8f, %.8f, %.8f\n", tb - ta, tc - tb, td - tc);
 
     return 0;
 }
