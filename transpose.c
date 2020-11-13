@@ -8,7 +8,7 @@ typedef struct {
 } Matrices;
 
 /* GLOBAL VARIABLES */
-pthread_mutex_t lock;
+pthread_mutex_t lock, malloc_lock;
 unsigned int max_row;
 unsigned int batch_size = 0, current_row = 0;
 unsigned int c = 0;
@@ -106,9 +106,10 @@ void *consume_and_calculate(void *arg) {
     Mat *mat = matrices->X;
     int actual_size;
 
-    unsigned int is[c];
-    unsigned int js[c];
-
+    pthread_mutex_lock(&malloc_lock);
+    unsigned int* is = malloc(sizeof(unsigned int) * c);
+    unsigned int* js = malloc(sizeof(unsigned int) * c);
+    pthread_mutex_unlock(&malloc_lock);
     // while there are rows left to be processed
     while ((actual_size = get_indices(is, js)) > 0) {
 //        printf("Got %d indices", actual_size);
@@ -117,6 +118,11 @@ void *consume_and_calculate(void *arg) {
         if (actual_size < c)
             break;
     }
+
+    pthread_mutex_lock(&malloc_lock);
+    free(is);
+    free(js);
+    pthread_mutex_unlock(&malloc_lock);
     return NULL;
 }
 
@@ -159,6 +165,9 @@ void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads) {
     if (pthread_mutex_init(&lock, NULL) != 0)
         pthread_exit((void *) 1);
 
+    if (pthread_mutex_init(&malloc_lock, NULL) != 0)
+        pthread_exit((void *) 1);
+
     /*Create 'threads' amount of pthreads to carry out tasks*/
     pthread_t thread_arr[threads];
     for (int i = 0; i < threads; i++) {
@@ -170,6 +179,7 @@ void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads) {
         pthread_join(thread_arr[i], NULL);
 
     pthread_mutex_destroy(&lock);
+    pthread_mutex_destroy(&malloc_lock);
     free(j_indices);
     free(i_indices);
     //printf("after: \n");
