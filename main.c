@@ -3,7 +3,6 @@
  **/
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include "util.h"
 
 int main(int argc, char **argv) {
@@ -55,15 +54,20 @@ int main(int argc, char **argv) {
     //run and measure time taken
     double ta, tb, tc, td;
     ta = stopwatch();
-    //printf("\n0) Address: %p\n", (void*) &mats[0]);
+
+//    printf("\n0) Address: %p\n", (void *) &mats[0]);
     mat_sq_trans_st(&mats[0]);
 
     tb = stopwatch();
-    //printf("\n1) Address: %p\n", (void*) &mats[1]);
+
+//    printf("\n1) Address: %p\n", (void *) &mats[1]);
     mat_sq_trans_mt(&mats[1], 1, t);
+
     tc = stopwatch();
-    //printf("\n3) Address: %p\n", (void*) &mats[2]);
+
+//    printf("\n2) Address: %p\n", (void *) &mats[2]);
     mat_sq_trans_mt(&mats[2], c, t);
+
     td = stopwatch();
 
     //print resulting matrices

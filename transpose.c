@@ -22,8 +22,8 @@ void transpose_mat(Mat *mat, unsigned int start, unsigned int end) {
     //printf("start: %d, end: %d\n", start, end);
     unsigned int n = max_row;
     double temp;
-    for (unsigned int i = start; i < end; i++) { // rows
-        for (unsigned int j = i + 1; j < n; j++) { // cols
+    for (unsigned int i = start; i < end; i++) { // row in original
+        for (unsigned int j = i + 1; j < n; j++) { // index within row in original
             temp = mat->ptr[i * n + j];
             mat->ptr[i * n + j] = mat->ptr[j * n + i];
             mat->ptr[j * n + i] = temp;
@@ -88,16 +88,17 @@ void *consume_and_calculate(void *arg) {
  * @param mat Matrix to be transposed
 */
 void mat_sq_trans_st(Mat *mat) {
-    //printf("\nAddress: %p\n", (void*) &mat);
+//    printf("\nAddress: %p\n\n", (void*) mat);
     max_row = mat->n;
     transpose_mat(mat, 0, max_row);
 }
 
 void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads) {
-    //printf("Address: %p\n\n", (void*) &mat);
+//    printf("\nAddress: %p\n\n", (void*) mat);
     //mat_print(mat);
     max_row = mat->n;
     batch_size = max_row / grain;
+    current_row = 0;
     Matrices matrices = {.X = mat};
     if (pthread_mutex_init(&lock, NULL) != 0)
         pthread_exit((void *) 1);

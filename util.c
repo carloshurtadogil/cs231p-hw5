@@ -23,14 +23,12 @@ void mat_init(Mat *mat, unsigned int m, unsigned int n){
     }
     mat->m = m;
     mat->n = n;
-    return;
 }
 
 void mat_fill(Mat *mat){
     for(int i=0; i < mat->m*mat->n; i++){
         mat->ptr[i] = (double)i;
     }
-    return;
 }
 
 void mat_diag(Mat *mat, double diag){
@@ -47,7 +45,6 @@ void mat_diag(Mat *mat, double diag){
         mat->ptr[off] = diag;
         off += mat->n + 1;
     }
-    return;
 }
 
 void mat_copy(Mat *to, Mat *from){
@@ -68,7 +65,6 @@ void mat_copy(Mat *to, Mat *from){
     for(int i=0; i < from->m*from->n; i++){
         to->ptr[i] = from->ptr[i];
     }
-    return;
 }
 
 void mat_print(Mat *mat){
@@ -79,5 +75,4 @@ void mat_print(Mat *mat){
         }
         printf("\n");
     }
-    return;
 }
