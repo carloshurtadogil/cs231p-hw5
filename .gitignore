@@ -3,3 +3,5 @@ hw5.bin
 .vscode
 /.idea/
 output
+/mt_fg.sh
+/mt_fg.txt
