@@ -15,6 +15,7 @@ unsigned int c = 0;
 unsigned int *i_indices = NULL;
 unsigned int *j_indices = NULL;
 unsigned int last_idx = 0;
+unsigned int upper_t_size = 0;
 
 /**
  * Transpose a given matrix
@@ -79,14 +80,19 @@ size_t get_calc_set(unsigned int rows[], size_t size) {
 int get_indices(unsigned int is[], unsigned int js[]) {
     int iterations = 0;
     pthread_mutex_lock(&lock);
-    for (unsigned int i = last_idx; i < last_idx + c && last_idx + c < max_row; ++i, ++last_idx) {
-        printf("calculating\n");
-        is[i] = i_indices[i];
-        js[i] = j_indices[i];
-        ++iterations;
+    unsigned int cur;
+    int i = 0;
+    if (last_idx < upper_t_size) {
+        // still work to be done
+        cur = last_idx;
+        last_idx += c;
+        for (i = 0; i < c && cur < upper_t_size; ++i, ++cur) {
+            is[i] = i_indices[cur];
+            js[i] = j_indices[cur];
+        }
     }
     pthread_mutex_unlock(&lock);
-    return iterations;
+    return i;
 }
 
 /**
@@ -141,14 +147,9 @@ void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads) {
     i_indices = (unsigned int *) malloc(sizeof(unsigned int) * (mat->n * mat->n - mat->n) / 2);
     j_indices = (unsigned int *) malloc(sizeof(unsigned int) * (mat->n * mat->n - mat->n) / 2);
     generate_indices(mat->n);
-//    for (int i = 0; i < 45; ++i){
-//        printf("%d, ",i_indices[i]);
-//    }
-//    printf("\n");
-//    for (int i = 0; i < 45; ++i){
-//        printf("%d, ",j_indices[i]);
-//    }
-//    printf("\n");
+    upper_t_size = (mat->n * mat->n - mat->n) / 2;
+    last_idx = 0;
+
     max_row = mat->n;
     c = grain;
     batch_size = max_row / grain;
