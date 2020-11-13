@@ -83,5 +83,8 @@ int main(int argc, char **argv) {
     //print execution time
     printf("%.8f, %.8f, %.8f\n", tb - ta, tc - tb, td - tc);
 
+    for (int i = 0; i < 3; ++i)
+        free(mats[i].ptr);
+
     return 0;
 }

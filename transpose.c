@@ -12,8 +12,9 @@ pthread_mutex_t lock;
 unsigned int max_row;
 unsigned int batch_size = 0, current_row = 0;
 unsigned int c = 0;
-unsigned int * i_indices = NULL;
-unsigned int * j_indices = NULL;
+unsigned int *i_indices = NULL;
+unsigned int *j_indices = NULL;
+unsigned int last_idx = 0;
 
 /**
  * Transpose a given matrix
@@ -49,7 +50,6 @@ void transpose_part(Mat *mat, unsigned int is[], unsigned int js[], unsigned int
 }
 
 
-
 /**
  * Grab a set of rows that have yet to be calculated
  * 
@@ -76,15 +76,18 @@ size_t get_calc_set(unsigned int rows[], size_t size) {
     return i;
 }
 
-// size_t get_indices(unsigned int is[], unsigned int js[]) {
-//     static unsigned int i = 0;
-//     static unsigned int j = 0;
-//     for (; i < max_row; ++i) {
-//         for (; j < max_row; ++j) {
-
-//         }
-//     }
-// }
+int get_indices(unsigned int is[], unsigned int js[]) {
+    int iterations = 0;
+    pthread_mutex_lock(&lock);
+    for (unsigned int i = last_idx; i < last_idx + c && last_idx + c < max_row; ++i, ++last_idx) {
+        printf("calculating\n");
+        is[i] = i_indices[i];
+        js[i] = j_indices[i];
+        ++iterations;
+    }
+    pthread_mutex_unlock(&lock);
+    return iterations;
+}
 
 /**
  * Consumes BATCH_SIZE consecutive rows and calculate the product at each column
@@ -93,21 +96,20 @@ size_t get_calc_set(unsigned int rows[], size_t size) {
 */
 void *consume_and_calculate(void *arg) {
     Matrices *matrices = (Matrices *) arg;
-    Mat *matrix = matrices->X;
-    unsigned int set[batch_size];
-    size_t actual_size;
-    // while there are rows left to be processed
-    while ((actual_size = get_calc_set(set, batch_size)) > 0) {
-        for (int i = 0; i < actual_size; ++i) {
-            unsigned int curr_row = set[i];
-            transpose_mat(matrix, curr_row, curr_row + 1);
-        }
+    Mat *mat = matrices->X;
+    int actual_size;
 
+    unsigned int is[c];
+    unsigned int js[c];
+
+    // while there are rows left to be processed
+    while ((actual_size = get_indices(is, js)) > 0) {
+//        printf("Got %d indices", actual_size);
+        transpose_part(mat, is, js, c);
         // last batch has been completed
-        if (actual_size < batch_size)
+        if (actual_size < c)
             break;
     }
-
     return NULL;
 }
 
@@ -124,8 +126,8 @@ void mat_sq_trans_st(Mat *mat) {
 
 void generate_indices(unsigned int n) {
     int count = 0;
-    for (int i = 0; i < max_row; ++i) {
-        for (int j = i + 1; j < max_row; ++j) {
+    for (int i = 0; i < n; ++i) {
+        for (int j = i + 1; j < n; ++j) {
             i_indices[count] = i;
             j_indices[count] = j;
             ++count;
@@ -136,10 +138,17 @@ void generate_indices(unsigned int n) {
 void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads) {
 //    printf("\nAddress: %p\n\n", (void*) mat);
     //mat_print(mat);
-    i_indices = (unsigned int *)malloc((mat->n * mat->n - mat->n)/2);
-    j_indices = (unsigned int *)malloc((mat->n * mat->n - mat->n)/2);
+    i_indices = (unsigned int *) malloc(sizeof(unsigned int) * (mat->n * mat->n - mat->n) / 2);
+    j_indices = (unsigned int *) malloc(sizeof(unsigned int) * (mat->n * mat->n - mat->n) / 2);
     generate_indices(mat->n);
-
+//    for (int i = 0; i < 45; ++i){
+//        printf("%d, ",i_indices[i]);
+//    }
+//    printf("\n");
+//    for (int i = 0; i < 45; ++i){
+//        printf("%d, ",j_indices[i]);
+//    }
+//    printf("\n");
     max_row = mat->n;
     c = grain;
     batch_size = max_row / grain;
@@ -159,6 +168,8 @@ void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads) {
         pthread_join(thread_arr[i], NULL);
 
     pthread_mutex_destroy(&lock);
+    free(j_indices);
+    free(i_indices);
     //printf("after: \n");
     //mat_print(mat);
 }
