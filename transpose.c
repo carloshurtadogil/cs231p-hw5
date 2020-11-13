@@ -79,19 +79,20 @@ size_t get_calc_set(unsigned int rows[], size_t size) {
 
 int get_indices(unsigned int is[], unsigned int js[]) {
     int iterations = 0;
-    pthread_mutex_lock(&lock);
     unsigned int cur;
     int i = 0;
+    pthread_mutex_lock(&lock);
     if (last_idx < upper_t_size) {
         // still work to be done
         cur = last_idx;
         last_idx += c;
+        pthread_mutex_unlock(&lock);
         for (i = 0; i < c && cur < upper_t_size; ++i, ++cur) {
             is[i] = i_indices[cur];
             js[i] = j_indices[cur];
         }
-    }
-    pthread_mutex_unlock(&lock);
+    } else
+        pthread_mutex_unlock(&lock);
     return i;
 }
 
