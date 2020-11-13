@@ -1,5 +1,6 @@
 #include <stdio.h> //remove if not using.
 #include <pthread.h>
+#include <stdlib.h>
 #include "util.h"//implementing
 
 typedef struct {
@@ -10,6 +11,9 @@ typedef struct {
 pthread_mutex_t lock;
 unsigned int max_row;
 unsigned int batch_size = 0, current_row = 0;
+unsigned int c = 0;
+unsigned int * i_indices = NULL;
+unsigned int * j_indices = NULL;
 
 /**
  * Transpose a given matrix
@@ -20,7 +24,7 @@ unsigned int batch_size = 0, current_row = 0;
 */
 void transpose_mat(Mat *mat, unsigned int start, unsigned int end) {
     //printf("start: %d, end: %d\n", start, end);
-    unsigned int n = max_row;
+    unsigned int n = mat->n;
     double temp;
     for (unsigned int i = start; i < end; i++) { // row in original
         for (unsigned int j = i + 1; j < n; j++) { // index within row in original
@@ -30,6 +34,21 @@ void transpose_mat(Mat *mat, unsigned int start, unsigned int end) {
         }
     }
 }
+
+void transpose(Mat *mat, unsigned int i, unsigned int j) {
+    unsigned int n = mat->n;
+    double temp = mat->ptr[i * n + j];
+    mat->ptr[i * n + j] = mat->ptr[j * n + i];
+    mat->ptr[j * n + i] = temp;
+}
+
+void transpose_part(Mat *mat, unsigned int is[], unsigned int js[], unsigned int len) {
+    for (int x = 0; x < len; ++x) {
+        transpose(mat, is[x], js[x]);
+    }
+}
+
+
 
 /**
  * Grab a set of rows that have yet to be calculated
@@ -56,6 +75,16 @@ size_t get_calc_set(unsigned int rows[], size_t size) {
 
     return i;
 }
+
+// size_t get_indices(unsigned int is[], unsigned int js[]) {
+//     static unsigned int i = 0;
+//     static unsigned int j = 0;
+//     for (; i < max_row; ++i) {
+//         for (; j < max_row; ++j) {
+
+//         }
+//     }
+// }
 
 /**
  * Consumes BATCH_SIZE consecutive rows and calculate the product at each column
@@ -93,10 +122,26 @@ void mat_sq_trans_st(Mat *mat) {
     transpose_mat(mat, 0, max_row);
 }
 
+void generate_indices(unsigned int n) {
+    int count = 0;
+    for (int i = 0; i < max_row; ++i) {
+        for (int j = i + 1; j < max_row; ++j) {
+            i_indices[count] = i;
+            j_indices[count] = j;
+            ++count;
+        }
+    }
+}
+
 void mat_sq_trans_mt(Mat *mat, unsigned int grain, unsigned int threads) {
 //    printf("\nAddress: %p\n\n", (void*) mat);
     //mat_print(mat);
+    i_indices = (unsigned int *)malloc((mat->n * mat->n - mat->n)/2);
+    j_indices = (unsigned int *)malloc((mat->n * mat->n - mat->n)/2);
+    generate_indices(mat->n);
+
     max_row = mat->n;
+    c = grain;
     batch_size = max_row / grain;
     current_row = 0;
     Matrices matrices = {.X = mat};
